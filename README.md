@@ -2,6 +2,9 @@
 
 **Does board governance drive ESG disclosure?**
 
+
+[![Live demo](https://img.shields.io/badge/live_demo-online-0f6b4f?style=flat-square)](https://vsvsingh201291.github.io/Governing-ESG/)
+
 An interactive, reproducible analytics project built on an MSc Finance & Management
 dissertation dataset (Cranfield University, 2022). It studies whether board composition,
 gender diversity and incentive design explain the level of ESG disclosure a firm provides —
