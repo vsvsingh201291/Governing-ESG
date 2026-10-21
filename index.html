@@ -5,23 +5,29 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Governing ESG — Board Governance &amp; ESG Disclosure Analytics</title>
   <meta name="description" content="Does board governance drive ESG disclosure? An interactive analytics project on 206 firms, 2016-2021." />
+  <meta name="theme-color" content="#0e5a43" />
   <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0" />
   <meta http-equiv="Pragma" content="no-cache" />
-  <link rel="stylesheet" href="assets/style.css?v=3" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Source+Serif+4:opsz,wght@8..60,600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/style.css?v=4" />
 </head>
 <body>
+  <a class="skip" href="#view">Skip to main content</a>
+
   <header class="topbar">
     <div class="brand">
-      <span class="mark">GE</span>
+      <span class="mark" aria-hidden="true">GE</span>
       <span>
         <strong>Governing ESG</strong>
         <em>Does board governance drive ESG disclosure?</em>
       </span>
     </div>
-    <nav id="nav" class="nav"></nav>
+    <nav id="nav" class="nav" aria-label="Primary"></nav>
   </header>
 
-  <main id="view" class="view">
+  <main id="view" class="view" tabindex="-1">
     <div class="loading">Loading dataset…</div>
   </main>
 
@@ -30,7 +36,14 @@
     <span>Built as a reproducible analytics project — figures are for demonstration.</span>
   </footer>
 
+  <noscript>
+    <p style="max-width:720px;margin:24px auto;padding:0 20px;font-family:system-ui,sans-serif">
+      This app needs JavaScript to render its charts and tables. Please enable JavaScript, or
+      read the project on <a href="https://github.com/vsvsingh201291/Governing-ESG">GitHub</a>.
+    </p>
+  </noscript>
+
   <script src="assets/chart.umd.min.js"></script>
-  <script src="assets/app.js?v=3"></script>
+  <script src="assets/app.js?v=4"></script>
 </body>
 </html>

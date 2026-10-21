@@ -31,6 +31,37 @@ const fmt = (n, d = 1) =>
 const fmt0 = (n) => (n === null || n === undefined ? "—" : Number(n).toLocaleString(undefined, { maximumFractionDigits: 0 }));
 const mean = (a) => (a.length ? a.reduce((x, y) => x + y, 0) / a.length : null);
 
+/* inline SVG icons (Lucide-style, no emoji) */
+const ICONS = {
+  overview: '<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>',
+  lookup: '<circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/>',
+  whatif: '<line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/>',
+  explorer: '<line x1="3" y1="3" x2="3" y2="21"/><line x1="3" y1="21" x2="21" y2="21"/><circle cx="9" cy="14" r="1.6"/><circle cx="14" cy="9" r="1.6"/><circle cx="19" cy="12" r="1.6"/>',
+  scorecard: '<line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/>',
+  model: '<path d="M3 3v18h18"/><path d="m7 14 4-4 3 3 5-6"/>',
+};
+
+function icon(name) {
+  const span = document.createElement("span");
+  span.className = "ficon";
+  span.setAttribute("aria-hidden", "true");
+  span.innerHTML = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" ' +
+    'stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+    (ICONS[name] || "") + "</svg>";
+  return span;
+}
+
+function labelCharts() {
+  document.querySelectorAll("canvas").forEach((c) => {
+    c.setAttribute("role", "img");
+    if (!c.getAttribute("aria-label")) {
+      const card = c.closest(".card");
+      const h = card && card.querySelector("h2, h3");
+      c.setAttribute("aria-label", h ? "Chart: " + h.textContent.trim() : "Chart");
+    }
+  });
+}
+
 function el(tag, attrs = {}, ...kids) {
   const n = document.createElement(tag);
   for (const [k, v] of Object.entries(attrs)) {
@@ -100,17 +131,23 @@ async function init() {
 
 function buildNav() {
   TABS.forEach((t) =>
-    $("#nav").append(el("button", { "data-tab": t.id, onclick: () => { location.hash = t.id; } }, t.label)));
+    $("#nav").append(el("button", { type: "button", "data-tab": t.id, onclick: () => { location.hash = t.id; } }, t.label)));
 }
 
 function route() {
   const tab = location.hash.slice(1) || "about";
   const valid = TABS.some((t) => t.id === tab) ? tab : "about";
-  document.querySelectorAll("#nav button").forEach((b) => b.classList.toggle("active", b.dataset.tab === valid));
+  document.querySelectorAll("#nav button").forEach((b) => {
+    const on = b.dataset.tab === valid;
+    b.classList.toggle("active", on);
+    if (on) b.setAttribute("aria-current", "page");
+    else b.removeAttribute("aria-current");
+  });
   destroyCharts();
   const view = $("#view");
   view.innerHTML = "";
   RENDER[valid](view);
+  labelCharts();
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
@@ -160,7 +197,8 @@ function renderAbout(root) {
   ];
   const featGrid = el("div", { class: "feat-grid" });
   features.forEach(([id, t, d]) => featGrid.append(el("div", { class: "feat" },
-    el("h3", {}, t), el("p", {}, d), el("button", { class: "btn go", onclick: go(id) }, "Open →"))));
+    icon(id), el("h3", {}, t), el("p", {}, d),
+    el("button", { class: "btn go", type: "button", onclick: go(id) }, "Open →"))));
   root.append(el("div", { class: "section" }, el("h2", {}, "What you can do"), featGrid));
 
   // ---- the research ----
@@ -782,10 +820,11 @@ function buildTable(rows, cols, sort, onSort, rowClass = null, onRowClick = null
   const tr = el("tr");
   cols.forEach(([key, label, type]) => {
     const sorted = sort && sort.key === key;
-    tr.append(el("th", { class: type === "num" || type === "score" ? "num" : "",
+    tr.append(el("th", { scope: "col", class: type === "num" || type === "score" ? "num" : "",
       onclick: () => onSort(key, sorted ? -sort.dir : -1) },
       label + (sorted ? (sort.dir === -1 ? " ▼" : " ▲") : "")));
   });
+  if (onRowClick) tr.append(el("th", { scope: "col", class: "num no-sort" }, ""));
   table.append(el("thead", {}, tr));
 
   const data = [...rows].sort((a, b) => {
@@ -800,7 +839,8 @@ function buildTable(rows, cols, sort, onSort, rowClass = null, onRowClick = null
   const tbody = el("tbody");
   data.forEach((row, i) => {
     const tr = el("tr", { class: rowClass ? rowClass(row, i) : null,
-      onclick: onRowClick ? () => onRowClick(row) : null, style: onRowClick ? "cursor:pointer" : null });
+      onclick: onRowClick ? () => onRowClick(row) : null,
+      style: onRowClick ? "cursor:pointer" : null });
     cols.forEach(([key, , type]) => {
       const v = row[key];
       if (type === "score") {
@@ -814,6 +854,11 @@ function buildTable(rows, cols, sort, onSort, rowClass = null, onRowClick = null
         tr.append(el("td", {}, v === null || v === undefined ? "—" : String(v)));
       }
     });
+    if (onRowClick) {
+      tr.append(el("td", { class: "num" },
+        el("button", { class: "btn mini", type: "button", "aria-label": "Open " + (row.name || row.company_id || "row"),
+          onclick: (e) => { e.stopPropagation(); onRowClick(row); } }, "Open")));
+    }
     tbody.append(tr);
   });
   table.append(tbody);
